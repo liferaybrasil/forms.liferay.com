@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeException;
@@ -41,7 +42,6 @@ import com.liferay.portal.upgrade.AutoBatchPreparedStatementUtil;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -88,6 +88,8 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 
 	@Override
 	protected void doUpgrade() throws Exception {
+		updateDDMStructureSuccessPage();
+
 		upgradeDDMStructureReferences();
 
 		upgradeDDLDDMContentReferences();
@@ -212,6 +214,23 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 		}
 	}
 
+	protected void updateSuccessPage(JSONObject definitionJSONObject) throws Exception {
+		JSONObject successPageJSONObject = definitionJSONObject.getJSONObject("successPage");
+
+		if (successPageJSONObject == null) {
+			return;
+		}
+
+		JSONObject title = _jsonFactory.createJSONObject();
+		JSONObject body = _jsonFactory.createJSONObject();
+
+		title.put("en_US", successPageJSONObject.getString("title", ""));
+		body.put("en_US", successPageJSONObject.getString("body", ""));
+
+		successPageJSONObject.put("title", title);
+		successPageJSONObject.put("body", body);
+	}
+
 	protected void upgradeDDLDDMContentReferences() throws Exception {
 		StringBundler sb = new StringBundler(7);
 
@@ -283,6 +302,36 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 			}
 
 			ps2.executeBatch();
+		}
+	}
+
+	protected void updateDDMStructureSuccessPage() throws Exception {
+		try (PreparedStatement ps1 = connection.prepareStatement(
+			"select DDMStructure.structureId, DDMStructure.definition from DDMStructure");
+			 PreparedStatement ps2 =
+				 AutoBatchPreparedStatementUtil.concurrentAutoBatch(
+					 connection,
+					 "update DDMStructure set definition = ? where " +
+					 "structureId = ?");
+			 ResultSet rs = ps1.executeQuery()) {
+
+			 while (rs.next()) {
+				 String definition = rs.getString("definition");
+
+				 JSONObject jsonObject = _jsonFactory.createJSONObject(definition);
+
+				 updateSuccessPage(jsonObject);
+
+				 long ddmStructureId = rs.getLong("structureId");
+
+				 ps2.setString(1, jsonObject.toString());
+
+				 ps2.setLong(2, ddmStructureId);
+
+				 ps2.addBatch();
+			 }
+
+			 ps2.executeBatch();
 		}
 	}
 
