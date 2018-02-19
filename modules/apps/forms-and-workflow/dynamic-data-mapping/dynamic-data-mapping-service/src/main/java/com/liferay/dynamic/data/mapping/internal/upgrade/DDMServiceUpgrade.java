@@ -122,7 +122,13 @@ public class DDMServiceUpgrade implements UpgradeStepRegistrator {
 		registry.register(
 			"com.liferay.dynamic.data.mapping.service", "1.1.2", "1.1.3",
 			new com.liferay.dynamic.data.mapping.internal.upgrade.v1_1_3.
-				UpgradeDDMStorageLink());
+				UpgradeDataProviderInstance(
+					_ddmDataProviderTracker, _ddmFormValuesJSONDeserializer,
+					_ddmFormValuesJSONSerializer),
+			new com.liferay.dynamic.data.mapping.internal.upgrade.v1_1_3.
+				UpgradeDDMStorageLink(),
+			new com.liferay.dynamic.data.mapping.internal.upgrade.v1_1_3.
+				UpgradeSuccessPage(_jsonFactory));
 
 		registry.register(
 			"com.liferay.dynamic.data.mapping.service", "1.1.3", "2.0.0",
