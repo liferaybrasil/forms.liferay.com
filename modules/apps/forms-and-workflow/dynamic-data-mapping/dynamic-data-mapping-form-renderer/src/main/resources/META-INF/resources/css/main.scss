@@ -420,3 +420,55 @@ body .ddm-user-view-content {
 .form-check-inline .custom-control-label {
 	line-height: 24px;
 }
+
+// ###### Forms Theme #######
+
+.portlet-forms {
+	.logo {
+		background-image: url('../images/logo.png');
+		float: left;
+		background-size: 192px;
+		margin-top: 20px;
+		width: 192px;
+		height: 48px;
+	}
+
+	.locale-actions, .logo {
+		margin-top: 20px;
+	}
+
+	#form-wrapper {
+		min-height: calc(100vh - 159px);
+	}
+
+	#banner {
+		text-align: center;
+		width: 100%;
+	}
+
+	#footer {
+		margin-top: 0px;
+		padding: 24px 20px;
+
+		a {
+			font-weight: bold;
+		}
+	}
+
+	@media (min-width: 768px) {
+		.logo {
+			background-size: 255px;
+			width: 255px;
+			height: 63px;
+		}
+
+		.locale-actions, .logo {
+			margin-top: 40px;
+		}
+
+		#form-wrapper {
+			min-height: calc(100vh - 194px);
+		}
+	}
+}
+
