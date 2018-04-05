@@ -34,13 +34,10 @@ public class UpgradeSuccessPage extends UpgradeProcess {
 
 	@Override
 	protected void doUpgrade() throws Exception {
-		upgradeDDMStructureSuccessPage();
 		upgradeDDMStructureVersionSuccessPage();
 	}
 
-	protected void updateSuccessPage(JSONObject definitionJSONObject)
-		throws Exception {
-
+	protected void updateSuccessPage(JSONObject definitionJSONObject) {
 		JSONObject successPageJSONObject = definitionJSONObject.getJSONObject(
 			"successPage");
 
@@ -51,47 +48,11 @@ public class UpgradeSuccessPage extends UpgradeProcess {
 		JSONObject title = _jsonFactory.createJSONObject();
 		JSONObject body = _jsonFactory.createJSONObject();
 
-		if (title.get("en_US") == null) {
-			title.put("en_US", successPageJSONObject.getString("title", ""));
-		}
+		title.put("en_US", successPageJSONObject.getString("title", ""));
+		body.put("en_US", successPageJSONObject.getString("body", ""));
 
-		if (body.get("en_US") == null) {
-			body.put("en_US", successPageJSONObject.getString("body", ""));
-		}
-
-		successPageJSONObject.put("body", body);
 		successPageJSONObject.put("title", title);
-	}
-
-	protected void upgradeDDMStructureSuccessPage() throws Exception {
-		try (PreparedStatement ps1 = connection.prepareStatement(
-				"select structureId, definition from DDMStructure");
-			PreparedStatement ps2 =
-				AutoBatchPreparedStatementUtil.concurrentAutoBatch(
-					connection,
-					"update DDMStructure set definition = ? where " +
-						"structureId = ?");
-			ResultSet rs = ps1.executeQuery()) {
-
-			while (rs.next()) {
-				String definition = rs.getString("definition");
-
-				JSONObject jsonObject = _jsonFactory.createJSONObject(
-					definition);
-
-				updateSuccessPage(jsonObject);
-
-				long ddmStructureId = rs.getLong("structureId");
-
-				ps2.setString(1, jsonObject.toString());
-
-				ps2.setLong(2, ddmStructureId);
-
-				ps2.addBatch();
-			}
-
-			ps2.executeBatch();
-		}
+		successPageJSONObject.put("body", body);
 	}
 
 	protected void upgradeDDMStructureVersionSuccessPage() throws Exception {
