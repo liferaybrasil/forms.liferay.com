@@ -96,6 +96,10 @@ AUI.add(
 					_getLocalizedLabel: function(option) {
 						var defaultLanguageId = themeDisplay.getDefaultLanguageId();
 
+						if (!option.label) {
+							return option.value;
+						}
+
 						return option.label[defaultLanguageId] ? option.label[defaultLanguageId] : option.label;
 					},
 
