@@ -25,8 +25,6 @@ import com.liferay.portal.kernel.util.Validator;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import java.util.Objects;
-
 /**
  * @author Adam Brandizzi
  * @author Pedro Queiroz
@@ -51,16 +49,6 @@ public class UpgradeDDMFormInstanceSettings extends UpgradeProcess {
 		settingsJSONObject.put("fieldValues", fieldValuesJSONArray);
 
 		return settingsJSONObject.toJSONString();
-	}
-
-	protected void convertToJSONArrayValue(
-		JSONObject fieldJSONObject, String defaultValue) {
-
-		JSONArray jsonArrayValue = _jsonFactory.createJSONArray();
-
-		jsonArrayValue.put(fieldJSONObject.getString("value", defaultValue));
-
-		fieldJSONObject.put("value", jsonArrayValue);
 	}
 
 	protected JSONObject createSettingJSONObject(
@@ -98,10 +86,6 @@ public class UpgradeDDMFormInstanceSettings extends UpgradeProcess {
 
 					addNewSetting(
 						settingsJSONObject, "autosaveEnabled", "true");
-					addNewSetting(
-						settingsJSONObject, "requireAuthentication", "false");
-
-					updateSettings(settingsJSONObject);
 
 					ps2.setString(1, settingsJSONObject.toJSONString());
 
@@ -113,29 +97,6 @@ public class UpgradeDDMFormInstanceSettings extends UpgradeProcess {
 
 			ps2.executeBatch();
 		}
-	}
-
-	protected JSONObject getFieldValue(
-		String fieldName, JSONArray fieldValues) {
-
-		for (int i = 0; i < fieldValues.length(); i++) {
-			JSONObject jsonObject = fieldValues.getJSONObject(i);
-
-			if (Objects.equals(jsonObject.getString("name"), fieldName)) {
-				return jsonObject;
-			}
-		}
-
-		return null;
-	}
-
-	protected void updateSettings(JSONObject settingsJSONObject) {
-		JSONArray fieldValues = settingsJSONObject.getJSONArray("fieldValues");
-
-		convertToJSONArrayValue(
-			getFieldValue("storageType", fieldValues), "json");
-		convertToJSONArrayValue(
-			getFieldValue("workflowDefinition", fieldValues), "no-workflow");
 	}
 
 	private final JSONFactory _jsonFactory;
