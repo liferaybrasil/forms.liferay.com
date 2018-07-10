@@ -141,9 +141,15 @@ public abstract class BaseDDMFormExporter implements DDMFormExporter {
 			ddmFormFieldTypeServicesTracker.getDDMFormFieldValueRenderer(
 				ddmFormField.getType());
 
+		DDMFormValues ddmFormValues = 
+			new DDMFormValues(ddmFormField.getDDMForm());
+
+		DDMFormFieldValue ddmFormFieldValue = ddmForFieldValues.get(0);
+
+		ddmFormFieldValue.setDDMFormValues(ddmFormValues);
+
 		String valueString = HtmlUtil.render(
-			ddmFormFieldValueRenderer.render(
-				ddmForFieldValues.get(0), getLocale()));
+			ddmFormFieldValueRenderer.render(ddmFormFieldValue, getLocale()));
 
 		return new DDMFormFieldRenderedValue(
 			ddmFormField.getName(), ddmFormField.getLabel(), valueString);
