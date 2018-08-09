@@ -36,6 +36,8 @@ AUI.add(
 									settingsContext = resolveJSON(cachedContextJSON);
 
 									field.set('context.settingsContext', settingsContext);
+
+									return settingsContext;
 								}
 								else {
 									var payload = {
