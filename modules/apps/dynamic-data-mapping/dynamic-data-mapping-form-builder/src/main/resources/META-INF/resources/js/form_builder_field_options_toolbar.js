@@ -95,7 +95,7 @@ AUI.add(
 
 						var element = instance.get('element');
 
-						instance._eventHandlers.push(element.delegate('click', A.bind('_onToolbaItemClick', instance), '.form-ddm-settings-item'));
+						instance._eventHandlers.push(element.delegate('click', A.bind('_onToolbaItemClick', instance), '.ddm-form-field-actions-item'));
 					},
 
 					_onToolbaItemClick: function(event) {
