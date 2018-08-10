@@ -111,7 +111,7 @@ AUI.add(
 
 						var formBuilder = instance.get('formBuilder');
 
-						var field = instance.get('field');
+						var field = formBuilder._sidebar.get('field');
 
 						var fieldSelected = dropdown.one('.dropdown-item[data-handler="' + handlerName + '"]');
 
