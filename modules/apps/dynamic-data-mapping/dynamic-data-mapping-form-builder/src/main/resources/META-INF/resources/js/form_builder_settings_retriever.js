@@ -30,7 +30,7 @@ AUI.add(
 								var cachedContextJSON = CACHE[type];
 
 								if (settingsContext) {
-									resolve(settingsContext);
+									return resolve(settingsContext);
 								}
 								else if (cachedContextJSON) {
 									settingsContext = resolveJSON(cachedContextJSON);
