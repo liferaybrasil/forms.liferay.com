@@ -506,8 +506,9 @@ body .ddm-user-view-content {
 		float: left;
 		background-size: 192px;
 		margin-top: 20px;
+		margin-left: -10px;
 		width: 192px;
-		height: 48px;
+		height: 56px;
 	}
 
 	.locale-actions, .logo {
@@ -515,7 +516,7 @@ body .ddm-user-view-content {
 	}
 
 	#form-wrapper {
-		min-height: calc(100vh - 159px);
+		min-height: calc(100vh - 173px);
 	}
 
 	#banner {
@@ -530,21 +531,10 @@ body .ddm-user-view-content {
 		a {
 			font-weight: bold;
 		}
-	}
 
-	@media (min-width: 768px) {
-		.logo {
-			background-size: 255px;
-			width: 255px;
-			height: 63px;
-		}
-
-		.locale-actions, .logo {
-			margin-top: 40px;
-		}
-
-		#form-wrapper {
-			min-height: calc(100vh - 194px);
+		.row {
+			margin-right: 0;
+			margin-left: 0;
 		}
 	}
 }
