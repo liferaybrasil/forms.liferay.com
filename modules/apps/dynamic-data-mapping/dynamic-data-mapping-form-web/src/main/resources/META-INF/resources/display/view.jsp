@@ -23,11 +23,7 @@ long formInstanceId = ddmFormDisplayContext.getFormInstanceId();
 
 DDMFormInstance formInstance = ddmFormDisplayContext.getFormInstance();
 
-String languageId = LanguageUtil.getLanguageId(request);
-Locale displayLocale = LocaleUtil.fromLanguageId(languageId);
-
 boolean displayHeaderAndFooter = (ddmFormDisplayContext.isPreview() || ddmFormDisplayContext.isFormShared()) && formInstanceId > 0 &&  ddmFormDisplayContext.isFormAvailable();
-
 %>
 
 <div class="portlet-forms">
@@ -52,6 +48,13 @@ boolean displayHeaderAndFooter = (ddmFormDisplayContext.isPreview() || ddmFormDi
 				</div>
 			</c:when>
 			<c:otherwise>
+
+				<%
+				String languageId = ddmFormDisplayContext.getDefaultLanguageId();
+
+				Locale displayLocale = LocaleUtil.fromLanguageId(languageId);
+				%>
+
 				<c:choose>
 					<c:when test="<%= ddmFormDisplayContext.isShowSuccessPage() %>">
 
