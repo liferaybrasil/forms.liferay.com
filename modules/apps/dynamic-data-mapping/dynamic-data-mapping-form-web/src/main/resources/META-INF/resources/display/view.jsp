@@ -17,52 +17,51 @@
 <%@ include file="/display/init.jsp" %>
 
 <%
-String redirect = ParamUtil.getString(request, "redirect", currentURL);
+	String redirect = ParamUtil.getString(request, "redirect", currentURL);
 
-long formInstanceId = ddmFormDisplayContext.getFormInstanceId();
+	long formInstanceId = ddmFormDisplayContext.getFormInstanceId();
 
-DDMFormInstance formInstance = ddmFormDisplayContext.getFormInstance();
+	DDMFormInstance formInstance = ddmFormDisplayContext.getFormInstance();
 
-boolean displayHeaderAndFooter = (ddmFormDisplayContext.isPreview() || ddmFormDisplayContext.isFormShared()) && formInstanceId > 0 &&  ddmFormDisplayContext.isFormAvailable();
+	boolean displayHeaderAndFooter = ddmFormDisplayContext.isFormAvailable() && (ddmFormDisplayContext.isPreview() || ddmFormDisplayContext.isFormShared());
 %>
 
-<div class="portlet-forms">
-	<c:if test="<%= displayHeaderAndFooter %>">
-		<header class="container-fluid-1280" id="banner">
-			<div class="logo"></div>
-			<div class="locale-actions pull-right">
-				<liferay-ui:language
-					formAction="<%= currentURL %>"
-					languageId="<%= languageId %>"
-					languageIds="<%= ddmFormDisplayContext.getAvailableLanguageIds() %>"
-				/>
-			</div>
-		</header>
-	</c:if>
+<c:choose>
+	<c:when test="<%= formInstanceId == 0 %>">
+		<div class="alert alert-info">
+			<liferay-ui:message key="select-an-existing-form-or-add-a-form-to-be-displayed-in-this-application" />
+		</div>
+	</c:when>
+	<c:otherwise>
+		<%
+			String languageId = ddmFormDisplayContext.getDefaultLanguageId();
 
-	<div id="form-wrapper">
-		<c:choose>
-			<c:when test="<%= formInstanceId == 0 %>">
-				<div class="alert alert-info">
-					<liferay-ui:message key="select-an-existing-form-or-add-a-form-to-be-displayed-in-this-application" />
-				</div>
-			</c:when>
-			<c:otherwise>
+			Locale displayLocale = LocaleUtil.fromLanguageId(languageId);
+		%>
 
-				<%
-				String languageId = ddmFormDisplayContext.getDefaultLanguageId();
+		<div class="portlet-forms">
+			<c:if test="<%= displayHeaderAndFooter %>">
+				<header class="container-fluid-1280" id="banner">
+					<div class="logo"></div>
+					<div class="locale-actions pull-right">
+						<liferay-ui:language
+							formAction="<%= currentURL %>"
+							languageId="<%= languageId %>"
+							languageIds="<%= ddmFormDisplayContext.getAvailableLanguageIds() %>"
+						/>
+					</div>
+				</header>
+			</c:if>
 
-				Locale displayLocale = LocaleUtil.fromLanguageId(languageId);
-				%>
-
+			<div id="form-wrapper">
 				<c:choose>
 					<c:when test="<%= ddmFormDisplayContext.isShowSuccessPage() %>">
 
 						<%
-						DDMFormSuccessPageSettings ddmFormSuccessPageSettings = ddmFormDisplayContext.getDDMFormSuccessPageSettings();
+							DDMFormSuccessPageSettings ddmFormSuccessPageSettings = ddmFormDisplayContext.getDDMFormSuccessPageSettings();
 
-						LocalizedValue title = ddmFormSuccessPageSettings.getTitle();
-						LocalizedValue body = ddmFormSuccessPageSettings.getBody();
+							LocalizedValue title = ddmFormSuccessPageSettings.getTitle();
+							LocalizedValue body = ddmFormSuccessPageSettings.getBody();
 						%>
 
 						<div class="portlet-forms">
@@ -74,206 +73,194 @@ boolean displayHeaderAndFooter = (ddmFormDisplayContext.isPreview() || ddmFormDi
 								</div>
 							</div>
 						</div>
-					</div>
-				</div>
-			</c:when>
-			<c:when test="<%= ddmFormDisplayContext.isFormAvailable() %>">
-				<portlet:actionURL name="addFormInstanceRecord" var="addFormInstanceRecordActionURL" />
+					</c:when>
+					<c:when test="<%= ddmFormDisplayContext.isFormAvailable() %>">
+						<portlet:actionURL name="addFormInstanceRecord" var="addFormInstanceRecordActionURL" />
 
-				<div class="portlet-forms">
-					<aui:form action="<%= addFormInstanceRecordActionURL %>" data-DDMFormInstanceId="<%= formInstanceId %>" method="post" name="fm">
 						<div class="portlet-forms">
 							<aui:form action="<%= addFormInstanceRecordActionURL %>" data-DDMFormInstanceId="<%= formInstanceId %>" method="post" name="fm">
-
-								<%
-								String redirectURL = ddmFormDisplayContext.getRedirectURL();
-								%>
-
-								<c:if test="<%= Validator.isNull(redirectURL) %>">
-									<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
-								</c:if>
-
-								<aui:input name="groupId" type="hidden" value="<%= formInstance.getGroupId() %>" />
-								<aui:input name="formInstanceId" type="hidden" value="<%= formInstance.getFormInstanceId() %>" />
-								<aui:input name="languageId" type="hidden" value="<%= languageId %>" />
-								<aui:input name="workflowAction" type="hidden" value="<%= WorkflowConstants.ACTION_PUBLISH %>" />
-
-								<liferay-ui:error exception="<%= CaptchaTextException.class %>" message="text-verification-failed" />
-								<liferay-ui:error exception="<%= DDMFormRenderingException.class %>" message="unable-to-render-the-selected-form" />
-								<liferay-ui:error exception="<%= DDMFormValuesValidationException.class %>" message="field-validation-failed" />
-
-								<liferay-ui:error exception="<%= DDMFormValuesValidationException.MustSetValidValue.class %>">
-
-									<%
-									DDMFormValuesValidationException.MustSetValidValue msvv = (DDMFormValuesValidationException.MustSetValidValue)errorException;
-									%>
-
-									<liferay-ui:message arguments="<%= HtmlUtil.escape(msvv.getFieldName()) %>" key="validation-failed-for-field-x" translateArguments="<%= false %>" />
-								</liferay-ui:error>
-
-								<liferay-ui:error exception="<%= DDMFormValuesValidationException.RequiredValue.class %>">
-
-									<%
-									DDMFormValuesValidationException.RequiredValue rv = (DDMFormValuesValidationException.RequiredValue)errorException;
-									%>
-
-									<liferay-ui:message arguments="<%= HtmlUtil.escape(rv.getFieldName()) %>" key="no-value-is-defined-for-field-x" translateArguments="<%= false %>" />
-								</liferay-ui:error>
-
-								<liferay-ui:error exception="<%= NoSuchFormInstanceException.class %>" message="the-selected-form-no-longer-exists" />
-								<liferay-ui:error exception="<%= NoSuchStructureException.class %>" message="unable-to-retrieve-the-definition-of-the-selected-form" />
-								<liferay-ui:error exception="<%= NoSuchStructureLayoutException.class %>" message="unable-to-retrieve-the-layout-of-the-selected-form" />
-
-								<liferay-ui:error-principal />
-
-								<c:if test="<%= ddmFormDisplayContext.isFormShared() %>">
-									<div class="container-fluid-1280">
-										<div class="locale-actions">
-											<liferay-ui:language
-												formAction="<%= currentURL %>"
-												languageId="<%= languageId %>"
-												languageIds="<%= ddmFormDisplayContext.getAvailableLanguageIds() %>"
-											/>
-										</div>
-									</div>
-								</c:if>
-
-								<c:if test="<%= !ddmFormDisplayContext.hasAddFormInstanceRecordPermission() %>">
-									<div class="ddm-form-basic-info">
-										<div class="container-fluid-1280">
-											<clay:alert
-												message='<%= LanguageUtil.get(resourceBundle, "you-do-not-have-the-permission-to-submit-this-form") %>'
-												style="warning"
-												title='<%= LanguageUtil.get(resourceBundle, "warning") %>'
-											/>
-										</div>
-									</div>
-								</c:if>
-
-								<div class="ddm-form-basic-info">
-									<div class="container-fluid-1280">
-										<h1 class="ddm-form-name"><%= HtmlUtil.escape(formInstance.getName(displayLocale)) %></h1>
+								<div class="portlet-forms">
+									<aui:form action="<%= addFormInstanceRecordActionURL %>" data-DDMFormInstanceId="<%= formInstanceId %>" method="post" name="fm">
 
 										<%
-										String description = HtmlUtil.escape(formInstance.getDescription(displayLocale));
+											String redirectURL = ddmFormDisplayContext.getRedirectURL();
 										%>
 
-										<c:if test="<%= Validator.isNotNull(description) %>">
-											<h5 class="ddm-form-description"><%= description %></h5>
+										<c:if test="<%= Validator.isNull(redirectURL) %>">
+											<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 										</c:if>
-									</div>
+
+										<aui:input name="groupId" type="hidden" value="<%= formInstance.getGroupId() %>" />
+										<aui:input name="formInstanceId" type="hidden" value="<%= formInstance.getFormInstanceId() %>" />
+										<aui:input name="languageId" type="hidden" value="<%= languageId %>" />
+										<aui:input name="workflowAction" type="hidden" value="<%= WorkflowConstants.ACTION_PUBLISH %>" />
+
+										<liferay-ui:error exception="<%= CaptchaTextException.class %>" message="text-verification-failed" />
+										<liferay-ui:error exception="<%= DDMFormRenderingException.class %>" message="unable-to-render-the-selected-form" />
+										<liferay-ui:error exception="<%= DDMFormValuesValidationException.class %>" message="field-validation-failed" />
+
+										<liferay-ui:error exception="<%= DDMFormValuesValidationException.MustSetValidValue.class %>">
+
+											<%
+												DDMFormValuesValidationException.MustSetValidValue msvv = (DDMFormValuesValidationException.MustSetValidValue)errorException;
+											%>
+
+											<liferay-ui:message arguments="<%= HtmlUtil.escape(msvv.getFieldName()) %>" key="validation-failed-for-field-x" translateArguments="<%= false %>" />
+										</liferay-ui:error>
+
+										<liferay-ui:error exception="<%= DDMFormValuesValidationException.RequiredValue.class %>">
+
+											<%
+												DDMFormValuesValidationException.RequiredValue rv = (DDMFormValuesValidationException.RequiredValue)errorException;
+											%>
+
+											<liferay-ui:message arguments="<%= HtmlUtil.escape(rv.getFieldName()) %>" key="no-value-is-defined-for-field-x" translateArguments="<%= false %>" />
+										</liferay-ui:error>
+
+										<liferay-ui:error exception="<%= NoSuchFormInstanceException.class %>" message="the-selected-form-no-longer-exists" />
+										<liferay-ui:error exception="<%= NoSuchStructureException.class %>" message="unable-to-retrieve-the-definition-of-the-selected-form" />
+										<liferay-ui:error exception="<%= NoSuchStructureLayoutException.class %>" message="unable-to-retrieve-the-layout-of-the-selected-form" />
+
+										<liferay-ui:error-principal />
+
+										<c:if test="<%= !ddmFormDisplayContext.hasAddFormInstanceRecordPermission() %>">
+											<div class="ddm-form-basic-info">
+												<div class="container-fluid-1280">
+													<clay:alert
+														message='<%= LanguageUtil.get(resourceBundle, "you-do-not-have-the-permission-to-submit-this-form") %>'
+														style="warning"
+														title='<%= LanguageUtil.get(resourceBundle, "warning") %>'
+													/>
+												</div>
+											</div>
+										</c:if>
+
+										<div class="ddm-form-basic-info">
+											<div class="container-fluid-1280">
+												<h1 class="ddm-form-name"><%= HtmlUtil.escape(formInstance.getName(displayLocale)) %></h1>
+
+												<%
+													String description = HtmlUtil.escape(formInstance.getDescription(displayLocale));
+												%>
+
+												<c:if test="<%= Validator.isNotNull(description) %>">
+													<h5 class="ddm-form-description"><%= description %></h5>
+												</c:if>
+											</div>
+										</div>
+
+										<div class="container-fluid-1280 ddm-form-builder-app">
+											<%= ddmFormDisplayContext.getDDMFormHTML() %>
+
+											<aui:input name="empty" type="hidden" value="" />
+										</div>
+									</aui:form>
 								</div>
 
-								<div class="container-fluid-1280 ddm-form-builder-app">
-									<%= ddmFormDisplayContext.getDDMFormHTML() %>
+								<aui:script use="aui-base">
+									var <portlet:namespace />intervalId;
 
-									<aui:input name="empty" type="hidden" value="" />
-								</div>
-							</aui:form>
-						</div>
-
-						<aui:script use="aui-base">
-							var <portlet:namespace />intervalId;
-
-							function <portlet:namespace />clearPortletHandlers(event) {
-								if (<portlet:namespace />intervalId) {
+									function <portlet:namespace />clearPortletHandlers(event) {
+									if (<portlet:namespace />intervalId) {
 									clearInterval(<portlet:namespace />intervalId);
-								}
+									}
 
-								Liferay.detach('destroyPortlet', <portlet:namespace />clearPortletHandlers);
-							};
+									Liferay.detach('destroyPortlet', <portlet:namespace />clearPortletHandlers);
+									};
 
-							Liferay.on('destroyPortlet', <portlet:namespace />clearPortletHandlers);
+									Liferay.on('destroyPortlet', <portlet:namespace />clearPortletHandlers);
 
-							<c:if test="<%= ddmFormDisplayContext.isFormShared() %>">
-								document.title = '<%= HtmlUtil.escape(formInstance.getName(displayLocale)) %>';
-							</c:if>
+									<c:if test="<%= ddmFormDisplayContext.isFormShared() %>">
+										document.title = '<%= HtmlUtil.escape(formInstance.getName(displayLocale)) %>';
+									</c:if>
 
-							function <portlet:namespace />fireFormView() {
-								Liferay.fire(
+									function <portlet:namespace />fireFormView() {
+									Liferay.fire(
 									'ddmFormView',
 									{
-										formId: <%= formInstanceId %>,
-										title: '<%= HtmlUtil.escape(formInstance.getName(displayLocale)) %>'
+									formId: <%= formInstanceId %>,
+									title: '<%= HtmlUtil.escape(formInstance.getName(displayLocale)) %>'
 									}
-								);
-							}
+									);
+									}
 
-							<c:choose>
-								<c:when test="<%= ddmFormDisplayContext.isAutosaveEnabled() %>">
-									var <portlet:namespace />form;
+									<c:choose>
+										<c:when test="<%= ddmFormDisplayContext.isAutosaveEnabled() %>">
+											var <portlet:namespace />form;
 
-									<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="addFormInstanceRecord" var="autoSaveFormInstanceRecordURL">
-										<portlet:param name="autoSave" value="<%= Boolean.TRUE.toString() %>" />
-										<portlet:param name="preview" value="<%= String.valueOf(ddmFormDisplayContext.isPreview()) %>" />
-									</liferay-portlet:resourceURL>
+											<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="addFormInstanceRecord" var="autoSaveFormInstanceRecordURL">
+												<portlet:param name="autoSave" value="<%= Boolean.TRUE.toString() %>" />
+												<portlet:param name="preview" value="<%= String.valueOf(ddmFormDisplayContext.isPreview()) %>" />
+											</liferay-portlet:resourceURL>
 
-									function <portlet:namespace />autoSave() {
-										A.io.request(
+											function <portlet:namespace />autoSave() {
+											A.io.request(
 											'<%= autoSaveFormInstanceRecordURL.toString() %>',
 											{
-												data: {
-													<portlet:namespace />formInstanceId: <%= formInstanceId %>,
-													<portlet:namespace />serializedDDMFormValues: JSON.stringify(<portlet:namespace />form.toJSON())
-												},
-												method: 'POST'
+											data: {
+											<portlet:namespace />formInstanceId: <%= formInstanceId %>,
+											<portlet:namespace />serializedDDMFormValues: JSON.stringify(<portlet:namespace />form.toJSON())
+											},
+											method: 'POST'
 											}
-										);
-									}
+											);
+											}
 
-									function <portlet:namespace />startAutoSave() {
-										if (<portlet:namespace />intervalId) {
+											function <portlet:namespace />startAutoSave() {
+											if (<portlet:namespace />intervalId) {
 											clearInterval(<portlet:namespace />intervalId);
-										}
+											}
 
-										<portlet:namespace />intervalId = setInterval(<portlet:namespace />autoSave, 60000);
-									}
+											<portlet:namespace />intervalId = setInterval(<portlet:namespace />autoSave, 60000);
+											}
 
-									<portlet:namespace />form = Liferay.component('<%= ddmFormDisplayContext.getContainerId() %>DDMForm');
+											<portlet:namespace />form = Liferay.component('<%= ddmFormDisplayContext.getContainerId() %>DDMForm');
 
-									if (<portlet:namespace />form) {
-										<portlet:namespace />startAutoSave();
+											if (<portlet:namespace />form) {
+											<portlet:namespace />startAutoSave();
 
-										<portlet:namespace />fireFormView();
-									}
-									else {
-										Liferay.after(
+											<portlet:namespace />fireFormView();
+											}
+											else {
+											Liferay.after(
 											'<%= ddmFormDisplayContext.getContainerId() %>DDMForm:render',
 											function(event) {
-												<portlet:namespace />form = Liferay.component('<%= ddmFormDisplayContext.getContainerId() %>DDMForm');
+											<portlet:namespace />form = Liferay.component('<%= ddmFormDisplayContext.getContainerId() %>DDMForm');
 
-												if (<portlet:namespace />form) {
-													<portlet:namespace />startAutoSave();
+											if (<portlet:namespace />form) {
+											<portlet:namespace />startAutoSave();
 
-													<portlet:namespace />fireFormView();
-												}
+											<portlet:namespace />fireFormView();
 											}
-										);
-									}
-								</c:when>
-								<c:otherwise>
-									function <portlet:namespace />startAutoExtendSession() {
-										if (<portlet:namespace />intervalId) {
+											}
+											);
+											}
+										</c:when>
+										<c:otherwise>
+											function <portlet:namespace />startAutoExtendSession() {
+											if (<portlet:namespace />intervalId) {
 											clearInterval(<portlet:namespace />intervalId);
-										}
+											}
 
-										var tenSeconds = 10000;
+											var tenSeconds = 10000;
 
-										var time = Liferay.Session.get('sessionLength') || tenSeconds;
+											var time = Liferay.Session.get('sessionLength') || tenSeconds;
 
-										<portlet:namespace />intervalId = setInterval(<portlet:namespace />extendSession, (time/2));
-									}
+											<portlet:namespace />intervalId = setInterval(<portlet:namespace />extendSession, (time/2));
+											}
 
-									function <portlet:namespace />extendSession() {
-										Liferay.Session.extend();
-									}
+											function <portlet:namespace />extendSession() {
+											Liferay.Session.extend();
+											}
 
-									<portlet:namespace />startAutoExtendSession();
+											<portlet:namespace />startAutoExtendSession();
 
-									<portlet:namespace />fireFormView();
-								</c:otherwise>
-							</c:choose>
-						</aui:script>
+											<portlet:namespace />fireFormView();
+										</c:otherwise>
+									</c:choose>
+								</aui:script>
+							</aui:form>
+						</div>
 					</c:when>
 					<c:otherwise>
 						<div class="alert alert-warning">
@@ -281,20 +268,20 @@ boolean displayHeaderAndFooter = (ddmFormDisplayContext.isPreview() || ddmFormDi
 						</div>
 					</c:otherwise>
 				</c:choose>
-			</c:otherwise>
-		</c:choose>
-	</div>
-	<c:if test="<%= displayHeaderAndFooter %>">
-		<footer id="footer">
-			<div class="container-fluid-1280">
-				<div class="row">
-					Liferay Inc<br>
-					Copyright &copy; 2018 All Rights Reserved.
-				</div>
 			</div>
-		</footer>
-	</c:if>
-</div>
+			<c:if test="<%= displayHeaderAndFooter %>">
+				<footer id="footer">
+					<div class="container-fluid-1280">
+						<div class="row">
+							Liferay Inc<br>
+							Copyright &copy; 2018 All Rights Reserved.
+						</div>
+					</div>
+				</footer>
+			</c:if>
+		</div>
+	</c:otherwise>
+</c:choose>
 
 <c:if test="<%= ddmFormDisplayContext.isShowConfigurationIcon() %>">
 	<div class="icons-container lfr-meta-actions">
