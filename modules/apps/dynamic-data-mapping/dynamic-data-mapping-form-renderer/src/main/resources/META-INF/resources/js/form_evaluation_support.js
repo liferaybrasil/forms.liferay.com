@@ -87,6 +87,8 @@ AUI.add(
 								if (fieldContext.valueChanged && !Util.compare(field.get('value'), fieldContext.value)) {
 									field.setValue(fieldContext.value);
 								}
+
+								field.set('errorMessage', '');
 							}
 
 							if (fieldContext.valid) {
