@@ -160,9 +160,15 @@ public class DDMFormInstanceRecordExporterImpl
 			ddmFormFieldTypeServicesTracker.getDDMFormFieldValueRenderer(
 				ddmFormField.getType());
 
+		DDMFormValues ddmFormValues = new DDMFormValues(
+			ddmFormField.getDDMForm());
+
+		DDMFormFieldValue ddmFormFieldValue = ddmFormFieldValues.get(0);
+
+		ddmFormFieldValue.setDDMFormValues(ddmFormValues);
+
 		return HtmlUtil.render(
-			ddmFormFieldValueRenderer.render(
-				ddmFormFieldValues.get(0), locale));
+			ddmFormFieldValueRenderer.render(ddmFormFieldValue, locale));
 	}
 
 	protected List<Map<String, String>> getDDMFormFieldValues(
